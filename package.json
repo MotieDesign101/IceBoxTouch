@@ -1,0 +1,20 @@
+{
+  "name": "iceboxpiclient",
+  "version": "1.0.0",
+  "description": "Touch and Barcode Client For IceBox",
+  "main": "test.js",
+  "scripts": {
+    "start": "node test.js",
+    "test": "mocha",
+    "startResourceLim": "nodemon --max_old_space_size=400 test.js --production  "
+  },
+  "directories": {
+    "test": "test"
+  },
+  "author": "@TVLuke",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.4",
+    "bonjour": "^3.2.0"
+  }
+}

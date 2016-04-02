@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8">
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js" crossorigin="anonymous" type="text/javascript"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <style>
+      html,
+      body {
+        cursor: none;
+
+        margin: 0;
+        /* äußeren Abstand / Rand auf zurücksetzen */
+        padding: 0;
+        /* inneren Abstand zurücksetzen */
+        height: 100%;
+        /* Seite soll über volle Höhe gehen */
+        color: #aaa;
+        /* graue Textfarbe */
+      }
+
+      .btn {
+        cursor: none;
+      }
+
+      .btn-default {
+        background-color: #c6c6c6;
+      }
+      .btn-flat {
+        filter:progid:DXImageTransform.Microsoft.Gradient(enabled='false');
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+        background-image: none;
+        border: 0;
+      }
+
+      #progress {
+        float: left;
+        width:10%;
+      }
+    </style>
+    <script>
+
+      var iceBoxIp = '';
+
+      var code = '';
+
+      var user = '';
+      var barcode = '';
+
+      var barcodes = [];
+      var usernames = [];
+      var nofunds = [];
+
+      document.addEventListener('keydown', function (event) {
+        if (event.keyCode == 13) {
+          var newcode = code;
+          console.log("LOG: " + newcode);
+          choice(newcode.toLowerCase());
+          code = '';
+        } else {
+          code = code + String.fromCharCode(event.keyCode);
+          console.log("--> " + code);
+        }
+      });
+
+      $(document).ready(function () {
+        document.body.style.cursor = 'none';
+        popupFadeOut();
+        usersFadeOut();
+        reloadFadeOut();
+        drinksFadeIn();
+        getIceBoxIp();
+        $('#main').on('click', '.choice', function (e) {
+          console.log(e);
+          buttonpressed(e);
+        });
+        $('#main').on('click', '.reload', function (e) {
+          console.log(e);
+          reload(e);
+        });
+        $('#main').on('click', '.reloadoption', function (e) {
+          console.log(e);
+          submitreload(e);
+        });
+        $('#main').on('click', '.neindake', function (e) {
+          console.log("nein danke");
+          resetAll();
+        });
+      });
+
+      function getIceBoxIp() {
+        barcodes = [];
+        usernames = [];
+        $.ajax({
+          url: "serviceip",
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'json',
+          success: function (connectionData) {
+            iceBoxIp = connectionData.ip;
+            if (iceBoxIp == '::') {
+              iceBoxIp = 'localhost';
+            }
+            loadDrinkData()
+          },
+          error: function () {
+            console.log("fail.");
+          }
+        });
+      }
+
+      function loadDrinkData() {
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8081/drinks",
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'json',
+          success: function (drinks) {
+            console.log(drinks);
+            loadUserData(drinks);
+          },
+          error: function () {
+            console.log("fail.");
+          }
+        });
+      }
+
+      function loadUserData(drinks) {
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8081/consumers",
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'json',
+          success: function (consumers) {
+            showConsumers(consumers);
+            showDrinks(drinks)
+          },
+          error: function () {
+            console.log("fail.");
+          }
+        });
+      }
+
+      function showDrinks(drinks) {
+        $('#drinks').empty();
+        var row = $('<div class="row" style="height: 33%">');
+        for (var i = 0; i < drinks.length; i++) {
+          if (drinks[i].quantity > 0) {
+            barcodes.push(drinks[i].barcode);
+            console.log("add drink: " + drinks[i].barcode);
+            var drink1 = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + drinks[i].barcode + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + drinks[i].name + '</button></div>')
+            drink1.appendTo(row);
+          }
+        }
+        $(row).appendTo('#drinks');
+        spinnerFadeOut();
+      }
+
+      function showConsumers(consumers) {
+        $('#users').empty();
+        var row = $('<div class="row" style="height: 33%">');
+        var anon = $('<div class="col-md-12" style="height: 100%"><button type="button" data-code="Anon" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">ANONYM</button></div>');
+        anon.appendTo(row);
+        $(row).appendTo('#users');
+        var row2 = $('<div class="row" style="height: 33%">');
+        for (var i = 0; i < consumers.length; i++) {
+          if (consumers[i].ledger >= 125) {
+            usernames.push(consumers[i].username.toLowerCase());
+            console.log("add username: " + consumers[i].username);
+            var money = (consumers[i].ledger / 100).toFixed(2);
+            var user = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + ' (' + money + ' €)</button></div>');
+            user.appendTo(row2);
+          }
+          $(row2).appendTo('#users');
+        }
+        //Now for users that don't have any money left
+        for (var i = 0; i < consumers.length; i++) {
+          if (consumers[i].username != "Anon" && consumers[i].ledger < 125) {
+            usernames.push(consumers[i].username.toLowerCase());
+            nofunds.push(consumers[i].username.toLowerCase());
+            console.log("add username: " + consumers[i].username);
+            var user = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + '</button></div>');
+            user.appendTo(row2);
+          }
+          $(row2).appendTo('#users');
+        }
+        spinnerFadeOut();
+      }
+
+      function reload(e) {
+        reloadUser(e.target.dataset.code);
+      }
+
+      function reloadUser(userToReload) {
+        user = userToReload;
+        if ($.inArray(userToReload, usernames) >= 0) {
+          usersFadeOut();
+          drinksFadeOut();
+          reloadFadeIn();
+          $('#reload').empty();
+          var row = $('<div class="row" style="height: 33%">');
+          var five = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="500" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">5 €</button></div>');
+          var ten = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="1000" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">10 €</button></div>');
+
+          var fifteen = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="1500" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">15 €</button></div>');
+
+          var twenty = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="2000" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">20 €</button></div>');
+
+          var twentyfive = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="2500" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">25 €</button></div>');
+
+          var fifty = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="5000" class="btn btn-primary btn-lg reloadoption" data-loading-text="Processing..." style="width:100%; height: 100%;">50 €</button></div>');
+          five.appendTo(row);
+          ten.appendTo(row);
+          fifteen.appendTo(row);
+          twenty.appendTo(row);
+          twentyfive.appendTo(row);
+          fifty.appendTo(row);
+          $(row).appendTo('#reload');
+        }
+      }
+
+      function buttonpressed(e) {
+        console.log(e.target.dataset.code)
+        choice(e.target.dataset.code);
+      }
+
+      function choice(e) {
+        code = '';
+        console.log(e);
+        console.log(barcodes.length);
+        for (var i = 0; i < barcodes.length; i++) {
+          console.log(barcodes[i]);
+        }
+        console.log($.inArray(e, barcodes));
+        if (e == "Anon" && barcode != '') {
+          console.log("OK, you went for anon...")
+          user = "Anon";
+          consumeDrink();
+          return;
+        }
+        if ($.inArray(e, barcodes) >= 0) {
+          console.log("is a barcode");
+          barcode = e;
+          drinksFadeOut();
+          reloadFadeOut();
+          usersFadeIn();
+        } else {
+          if ($.inArray(e.toLowerCase(), usernames) >= 0) {
+            console.log("is a user");
+            if ($.inArray(e.toLowerCase(), nofunds) < 0) {
+              //TODO how do we know he has funds?
+              console.log("is a user, has funds");
+              user = e;
+              usersFadeOut();
+            } else {
+              console.log("is a user, has no funds");
+              user = e;
+              reloadUser(e);
+            }
+          } else {
+            popupFadeIn('ERROR', 'Sorry. Something went wrong. Try again', true)
+            setTimeout(function () {
+              popupFadeOut();
+              usersFadeOut();
+              drinksFadeIn();
+              getIceBoxIp();
+            }, 5000);
+          }
+        }
+        if (barcode != '' & user != '') {
+          consumeDrink();
+        }
+      }
+
+      function consumeDrink() {
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8081/consumptions/" + user,
+          type: 'POST',
+          data: {
+            barcode: barcode
+          },
+          crossDomain: true,
+          dataType: 'json',
+          success: function (consumer) {
+            //TODO: show sucess and new amount on ledger
+            usersFadeOut();
+            reloadFadeOut();
+            if (user == 'Anon') {
+              popupFadeIn('YAY', 'Drink succesfully purchased', false)
+              setTimeout(function () {
+                popupFadeOut();
+                resetAll();
+              }, 2000);
+            } else {
+              var ledger = (consumer.ledger / 100).toFixed(2);
+              var username = consumer.username;
+              var text = "Thanks " + username + ", \n You now have " + ledger + "€ left."
+              popupFadeIn('YAY', text, false)
+              setTimeout(function () {
+                popupFadeOut();
+                //TODO: allow to refund if ledger == 0 ?
+                if (consumer.ledger >= 125) {
+                  resetAll();
+                } else {
+                  barcode = '';
+                  reloadUser(consumer.username);
+                }
+              }, 3000);
+            }
+          },
+          error: function (jqXHR, textStatus, error) {
+            popupFadeIn('ERROR', 'Sorry. Something went wrong, you did not buy a drink \n ' + textStatus + "\n " + error + ' \n' + jqXHR, true)
+            setTimeout(function () {
+              popupFadeOut();
+              //TODO: allow to refund if ledger == 0 ?
+              resetAll();
+            }, 5000);
+          }
+        });
+      }
+
+      function resetAll() {
+        barcode = '';
+        user = '';
+        usersFadeOut();
+        drinksFadeIn();
+        getIceBoxIp();
+      }
+
+      function submitreload(e) {
+        var money = e.target.dataset.code;
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8081/consumers/" + user + "/deposit",
+          type: 'POST',
+          data: {
+            amount: money
+          },
+          crossDomain: true,
+          dataType: 'json',
+          success: function (consumers) {
+            choice(user);
+            resetAll();
+          },
+          error: function (jqXHR, textStatus, error) {
+            popupFadeIn('ERROR', 'Sorry. Something went wrong. You did not recharge your account. \n ' + textStatus + "\n " + error + ' \n' + jqXHR, true)
+            setTimeout(function () {
+              popupFadeOut();
+              //TODO: allow to refund if ledger == 0 ?
+              resetAll();
+            }, 5000);
+          }
+        });
+      }
+
+      function spinnerFadeIn() {
+        $('#spinner').fadeIn("fast");
+      }
+
+      function spinnerFadeOut() {
+        $('#spinner').fadeOut("fast");
+      }
+
+      function usersFadeOut() {
+        $('#users').fadeOut("fast");
+        $('#back').fadeOut("fast");
+      }
+
+      function usersFadeIn() {
+        $('#users').fadeIn("fast");
+        $('#back').fadeIn("fast");
+      }
+
+      function drinksFadeIn() {
+        $('#drinks').fadeIn("fast");
+      }
+
+      function drinksFadeOut() {
+        $('#drinks').fadeOut("fast");
+      }
+
+      function reloadFadeIn() {
+        $('#reload').fadeIn("fast");
+        $('#back').fadeIn("fast");
+      }
+
+      function reloadFadeOut() {
+        $('#reload').fadeOut("fast");
+        $('#back').fadeOut("fast");
+      }
+
+      function popupFadeOut() {
+        $('#popup').fadeOut("fast");
+        $('#popuptitle').empty();
+        $('#popupcontent').empty();
+      }
+
+      function popupFadeIn(title, content, error) {
+        $('#popupallcontent').removeClass('panel-danger');
+        $('#popupallcontent').removeClass('panel-success');
+        if (error) {
+          $('#popupallcontent').addClass('panel-danger');
+        } else {
+          $('#popupallcontent').addClass('panel-success');
+        }
+        var pt = $('#popuptitle')
+        pt.empty();
+        $('<h4>' + title + '</h4>').appendTo(pt);
+        var pc = $('#popupcontent');
+        pc.empty();
+        $('<p>' + content + '</p>').appendTo(pc);
+        $('#popup').fadeIn("fast");
+      }
+    </script>
+  </head>
+  <body>
+    <div id='main' style="height: 100%;">
+      <div class="container-fluid" id="drinks" style="height: 100%"></div>
+      <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;"><button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button></div>
+      </div>
+      <div class="container-fluid" id="users" style="height: 85%"></div>
+      <div class="container-fluid" id="reload" style="height: 85%"></div>
+      <div id="spinner" onclick="resetAll()" style="position: fixed; top: 50%; left: 50%; margin-left: -50px; margin-top: -50px;">
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;"><button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button></div>
+      </div>
+      <div id="popup" style="width: 50%; position: fixed; top: 50%; left: 50%; margin-left: -25%;">
+        <div class="modal-dialog">
+          <div class="modal-content" id="popupallcontent">
+            <div class="modal-header panel-heading">
+              <h4 class="modal-title" id="popuptitle"></h4>
+            </div>
+            <div class="modal-body" id="popupcontent"></div>
+          </div>
+        </div>
+      </div>
+    </body>
+  </html>
