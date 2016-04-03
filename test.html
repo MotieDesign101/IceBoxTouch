@@ -45,8 +45,9 @@
 
       #progress {
         float: left;
-        width:10%;
+        width: 10%;
       }
+
     </style>
     <script>
 
@@ -178,8 +179,8 @@
             usernames.push(consumers[i].username.toLowerCase());
             console.log("add username: " + consumers[i].username);
             var money = (consumers[i].ledger / 100).toFixed(2);
-            var user = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + ' (' + money + ' €)</button></div>');
-            user.appendTo(row2);
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + ' (' + money + ' €)</button></div>');
+            userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
         }
@@ -189,8 +190,8 @@
             usernames.push(consumers[i].username.toLowerCase());
             nofunds.push(consumers[i].username.toLowerCase());
             console.log("add username: " + consumers[i].username);
-            var user = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + '</button></div>');
-            user.appendTo(row2);
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + '</button></div>');
+            userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
         }
@@ -236,11 +237,8 @@
 
       function choice(e) {
         code = '';
-        console.log(e);
+        console.log("submitted value "+e);
         console.log(barcodes.length);
-        for (var i = 0; i < barcodes.length; i++) {
-          console.log(barcodes[i]);
-        }
         console.log($.inArray(e, barcodes));
         if (e == "Anon" && barcode != '') {
           console.log("OK, you went for anon...")
@@ -250,11 +248,14 @@
         }
         if ($.inArray(e, barcodes) >= 0) {
           console.log("is a barcode");
+          //TDOD: call dostuff
+          calldostuff(e);
           barcode = e;
           drinksFadeOut();
           reloadFadeOut();
           usersFadeIn();
         } else {
+          console.log("not a drink!")
           if ($.inArray(e.toLowerCase(), usernames) >= 0) {
             console.log("is a user");
             if ($.inArray(e.toLowerCase(), nofunds) < 0) {
@@ -270,16 +271,32 @@
           } else {
             popupFadeIn('ERROR', 'Sorry. Something went wrong. Try again', true)
             setTimeout(function () {
+              resetAll();
               popupFadeOut();
               usersFadeOut();
               drinksFadeIn();
-              getIceBoxIp();
             }, 5000);
           }
         }
-        if (barcode != '' & user != '') {
+        if (barcode != '' & user != '' && user != undefined ) {
+          console.log("barcode and user set...");
           consumeDrink();
         }
+      }
+
+      function calldostuff(barcode) {
+        $.ajax({
+          url: "dostuff/"+barcode,
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'json',
+          success: function () {
+
+          },
+          error: function () {
+            console.log("fail. Dostuff failed.");
+          }
+        });
       }
 
       function consumeDrink() {
@@ -330,6 +347,7 @@
       }
 
       function resetAll() {
+        console.log("reset all");
         barcode = '';
         user = '';
         usersFadeOut();
@@ -426,12 +444,16 @@
     <div id='main' style="height: 100%;">
       <div class="container-fluid" id="drinks" style="height: 100%"></div>
       <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
-        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;"><button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button></div>
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
+          <button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button>
+        </div>
       </div>
       <div class="container-fluid" id="users" style="height: 85%"></div>
       <div class="container-fluid" id="reload" style="height: 85%"></div>
       <div id="spinner" onclick="resetAll()" style="position: fixed; top: 50%; left: 50%; margin-left: -50px; margin-top: -50px;">
-        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;"><button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button></div>
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
+          <button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
+        </div>
       </div>
       <div id="popup" style="width: 50%; position: fixed; top: 50%; left: 50%; margin-left: -25%;">
         <div class="modal-dialog">
