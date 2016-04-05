@@ -19,3 +19,4 @@ Au dem Pi liegt ein bash-script, das sieht so aus:
 gpiotest hat mit dem Kram hier nichts zu tun, der rest startet diesen dienst und dann den browser in fullscreen.
 
 ## License
+MIT 
