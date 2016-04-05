@@ -17,3 +17,5 @@ Au dem Pi liegt ein bash-script, das sieht so aus:
     xte 'sleep 10' 'key F11' & epiphany-browser http://localhost:8082
 
 gpiotest hat mit dem Kram hier nichts zu tun, der rest startet diesen dienst und dann den browser in fullscreen.
+
+## License
