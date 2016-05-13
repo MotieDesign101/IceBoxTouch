@@ -86,6 +86,7 @@
           buttonpressed(e);
         });
         $('#main').on('click', '.reload', function (e) {
+          console.log("reload");
           console.log(e);
           reload(e);
         });
@@ -100,6 +101,7 @@
       });
 
       function getIceBoxIp() {
+        console.log("get icebox ip...");
         barcodes = [];
         usernames = [];
         $.ajax({
@@ -108,6 +110,7 @@
           crossDomain: true,
           dataType: 'json',
           success: function (connectionData) {
+            console.log("got connection data");
             iceBoxIp = connectionData.ip;
             if (iceBoxIp == '::') {
               iceBoxIp = 'localhost';
@@ -121,12 +124,14 @@
       }
 
       function loadDrinkData() {
+        console.log("load drink data");
         $.ajax({
           url: "http://" + iceBoxIp + ":8081/drinks",
           type: 'GET',
           crossDomain: true,
           dataType: 'json',
           success: function (drinks) {
+            console.log("drinks...");
             console.log(drinks);
             loadUserData(drinks);
           },
@@ -143,6 +148,7 @@
           crossDomain: true,
           dataType: 'json',
           success: function (consumers) {
+            console.log("consumers gotten");
             showConsumers(consumers);
             showDrinks(drinks)
           },
@@ -153,13 +159,14 @@
       }
 
       function showDrinks(drinks) {
+        console.log("show drinks");
         $('#drinks').empty();
         var row = $('<div class="row" style="height: 33%">');
         for (var i = 0; i < drinks.length; i++) {
           if (drinks[i].quantity > 0) {
             barcodes.push(drinks[i].barcode);
             console.log("add drink: " + drinks[i].barcode);
-            var drink1 = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + drinks[i].barcode + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + drinks[i].name + '</button></div>')
+            var drink1 = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + drinks[i].barcode + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' +  $('<div/>').text(drinks[i].name).html() + '</button></div>')
             drink1.appendTo(row);
           }
         }
@@ -179,7 +186,7 @@
             usernames.push(consumers[i].username.toLowerCase());
             console.log("add username: " + consumers[i].username);
             var money = (consumers[i].ledger / 100).toFixed(2);
-            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + ' (' + money + ' €)</button></div>');
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + ' (' + money + ' €)</button></div>');
             userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
@@ -190,7 +197,7 @@
             usernames.push(consumers[i].username.toLowerCase());
             nofunds.push(consumers[i].username.toLowerCase());
             console.log("add username: " + consumers[i].username);
-            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + consumers[i].username + '</button></div>');
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + '</button></div>');
             userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
@@ -199,12 +206,16 @@
       }
 
       function reload(e) {
+        console.log(e.target.dataset.code);
         reloadUser(e.target.dataset.code);
       }
 
       function reloadUser(userToReload) {
         user = userToReload;
+        userToReload = userToReload.toLowerCase();
+        console.log("reloadUser "+userToReload)
         if ($.inArray(userToReload, usernames) >= 0) {
+          console.log("ok, lets go...");
           usersFadeOut();
           drinksFadeOut();
           reloadFadeIn();
@@ -248,8 +259,6 @@
         }
         if ($.inArray(e, barcodes) >= 0) {
           console.log("is a barcode");
-          //TDOD: call dostuff
-          calldostuff(e);
           barcode = e;
           drinksFadeOut();
           reloadFadeOut();
@@ -282,21 +291,6 @@
           console.log("barcode and user set...");
           consumeDrink();
         }
-      }
-
-      function calldostuff(barcode) {
-        $.ajax({
-          url: "dostuff/"+barcode,
-          type: 'GET',
-          crossDomain: true,
-          dataType: 'json',
-          success: function () {
-
-          },
-          error: function () {
-            console.log("fail. Dostuff failed.");
-          }
-        });
       }
 
       function consumeDrink() {
@@ -389,6 +383,7 @@
       }
 
       function usersFadeOut() {
+        console.log("usersFadeOut");
         $('#users').fadeOut("fast");
         $('#back').fadeOut("fast");
       }
@@ -399,6 +394,7 @@
       }
 
       function drinksFadeIn() {
+        console.log("drinksFadeIn");
         $('#drinks').fadeIn("fast");
       }
 
@@ -445,14 +441,14 @@
       <div class="container-fluid" id="drinks" style="height: 100%"></div>
       <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
         <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-          <button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button>
+          <button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button>
         </div>
       </div>
       <div class="container-fluid" id="users" style="height: 85%"></div>
       <div class="container-fluid" id="reload" style="height: 85%"></div>
       <div id="spinner" onclick="resetAll()" style="position: fixed; top: 50%; left: 50%; margin-left: -50px; margin-top: -50px;">
         <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-          <button type="button" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
+          <button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
         </div>
       </div>
       <div id="popup" style="width: 50%; position: fixed; top: 50%; left: 50%; margin-left: -25%;">
