@@ -105,7 +105,7 @@
           console.log("LOG: " + newcode);
           choice(newcode);
           code = '';
-        } else {
+        } else if (event.keyCode > 32) {
           code = code + String.fromCharCode(event.keyCode);
           console.log("--> " + code);
         }
