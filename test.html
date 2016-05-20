@@ -31,6 +31,10 @@
         cursor: none;
       }
 
+      .usernamediv {
+          overflow:  hidden;
+      }
+
       .btn-default {
         background-color: #c6c6c6;
       }
@@ -171,6 +175,11 @@
           }
         }
         $(row).appendTo('#drinks');
+
+        var refreshthing = $('<div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">');
+        $('<button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
+        $(refreshthing).appendTo('#drinks');
+
         spinnerFadeOut();
       }
 
@@ -186,7 +195,7 @@
             usernames.push(consumers[i].username.toLowerCase());
             console.log("add username: " + consumers[i].username);
             var money = (consumers[i].ledger / 100).toFixed(2);
-            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + ' (' + money + ' €)</button></div>');
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary usernamediv btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + ' (' + money + ' €)</button></div>');
             userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
@@ -202,6 +211,11 @@
           }
           $(row2).appendTo('#users');
         }
+
+        var refreshthing = $('<div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">');
+        $('<button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
+        $(refreshthing).appendTo('#users');
+
         spinnerFadeOut();
       }
 
@@ -295,7 +309,7 @@
 
       function consumeDrink() {
         $.ajax({
-          url: "http://" + iceBoxIp + ":8081/consumptions/" + user,
+          url: "http://" + iceBoxIp + ":8081/consumptions/" + encodeURIComponent(user),
           type: 'POST',
           data: {
             barcode: barcode
@@ -352,7 +366,7 @@
       function submitreload(e) {
         var money = e.target.dataset.code;
         $.ajax({
-          url: "http://" + iceBoxIp + ":8081/consumers/" + user + "/deposit",
+          url: "http://" + iceBoxIp + ":8081/consumers/" + encodeURIComponent(user) + "/deposit",
           type: 'POST',
           data: {
             amount: money
@@ -460,9 +474,6 @@
             <div class="modal-body" id="popupcontent"></div>
           </div>
         </div>
-      </div>
-      <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-        <button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
       </div>
     </body>
   </html>
