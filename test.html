@@ -38,6 +38,11 @@
       .btn-default {
         background-color: #c6c6c6;
       }
+
+      .undo {
+        background-color: #FF0000;
+      }
+
       .btn-flat {
         filter:progid:DXImageTransform.Microsoft.Gradient(enabled='false');
         -webkit-box-shadow: none;
@@ -61,6 +66,9 @@
 
       var user = '';
       var barcode = '';
+
+      var undodata={};
+      var undotimeout;
 
       var barcodes = [];
       var usernames = [];
@@ -197,6 +205,7 @@
 
       function showDrinks(drinks) {
         console.log("show drinks");
+        checkIfUndoIsVisible();
         $('#drinks').empty();
         var row = $('<div class="row" style="height: 33%">');
         for (var i = 0; i < drinks.length; i++) {
@@ -214,6 +223,53 @@
         $(refreshthing).appendTo('#drinks');
 
         spinnerFadeOut();
+      }
+
+      function checkIfUndoIsVisible() {
+        if($.isEmptyObject(undodata)) {
+          undofadeOut();
+        } else {
+          undofadeIn();
+          undotimeout = setTimeout(function () {
+            undofadeOut();
+            undodata = {};
+          }, 10000);
+        }
+      }
+
+      function undo() {
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8081/consumptions/" + encodeURIComponent(user),
+          type: 'DELETE',
+          data: undodata,
+          crossDomain: true,
+          dataType: 'json',
+          success: function (consumer) {
+            undodata = {};
+            usersFadeOut();
+            reloadFadeOut();
+            var ledger = (consumer.ledger / 100).toFixed(2);
+            var username = consumer.username;
+            var text = "Thanks " + username + ", \n You now have " + ledger + "€ left."
+            popupFadeIn('YAY', text, false)
+            setTimeout(function () {
+              popupFadeOut();
+              if (consumer.ledger >= 125) {
+                resetAll();
+              } else {
+                barcode = '';
+                reloadUser(consumer.username);
+              }
+            }, 3000);
+          },
+          error: function (jqXHR, textStatus, error) {
+            popupFadeIn('ERROR', 'Sorry. Something went wrong, you did not buy a drink \n ' + textStatus + "\n " + error + ' \n' + jqXHR, true)
+            setTimeout(function () {
+              popupFadeOut();
+              resetAll();
+            }, 5000);
+          }
+        });
       }
 
       function showConsumers(consumers) {
@@ -250,6 +306,7 @@
         $(refreshthing).appendTo('#users');
 
         spinnerFadeOut();
+        undofadeOut();
       }
 
       function reload(e) {
@@ -285,6 +342,7 @@
           fifty.appendTo(row);
           $(row).appendTo('#reload');
         }
+        undofadeOut();
       }
 
       function buttonpressed(e) {
@@ -362,6 +420,7 @@
               var username = consumer.username;
               var text = "Thanks " + username + ", \n You now have " + ledger + "€ left."
               popupFadeIn('YAY', text, false)
+              undodata = consumer.undoparameters;
               setTimeout(function () {
                 popupFadeOut();
                 //TODO: allow to refund if ledger == 0 ?
@@ -436,6 +495,7 @@
       function usersFadeIn() {
         $('#users').fadeIn("fast");
         $('#back').fadeIn("fast");
+        undofadeOut();
       }
 
       function drinksFadeIn() {
@@ -450,6 +510,7 @@
       function reloadFadeIn() {
         $('#reload').fadeIn("fast");
         $('#back').fadeIn("fast");
+        undofadeOut();
       }
 
       function reloadFadeOut() {
@@ -461,6 +522,15 @@
         $('#popup').fadeOut("fast");
         $('#popuptitle').empty();
         $('#popupcontent').empty();
+      }
+
+      function undofadeOut() {
+        $('#undo').fadeOut("fast");
+        clearTimeout(undotimeout);
+      }
+
+      function undofadeIn() {
+        $('#undo').fadeIn("fast");
       }
 
       function popupFadeIn(title, content, error) {
@@ -482,7 +552,12 @@
     </script>
   </head>
   <body>
-    <div id='main' style="height: 100%;">
+    <div id='main' style="height: 100%;  width:90%">
+      <div class="container-fluid" onclick="undo()" id="undo">
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
+          <button type="button" class="btn btn-default btn-lg undo btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">UNDO</button>
+        </div>
+      </div>
       <div class="container-fluid" id="drinks" style="height: 100%"></div>
       <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
         <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
