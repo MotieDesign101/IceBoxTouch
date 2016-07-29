@@ -527,69 +527,6 @@
         });
       }
 
-      /*
-      function choice(e) {
-        if(user && barcode) {
-          return;
-        }
-        code = '';
-        console.log("submitted value "+e);
-        console.log(barcodes.length);
-        console.log($.inArrayIn(e, barcodes));
-        if (e == "Anon" && barcode != '') {
-          console.log("OK, you went for anon...")
-          user = "Anon";
-          consumeDrink(user, barcode);
-          user = '';
-          barcode = '';
-          return;
-        }
-        if ($.inArrayIn(e, barcodes) >= 0) {
-          console.log("is a barcode");
-          barcode = e;
-          drinksFadeOut();
-          reloadFadeOut();
-          if(!user) {
-            usersFadeIn();
-          }
-        } else {
-          console.log("not a drink!")
-          if ($.inArrayIn(e, usernames) >= 0) {
-            if(!user) {
-              console.log("is a user");
-
-              if ($.inArrayIn(e, nofunds) < 0) {
-                //TODO how do we know he has funds?
-                console.log("is a user, has funds");
-                usersFadeOut();
-              } else {
-                console.log("is a user, has no funds");
-                reloadUser(user);
-              }
-            }
-          } else {
-            if(!isAlternative) {
-              findAlias(e, function(alias) {
-                if(alias) {
-                  choice(alias, true);
-                } else {
-                  errorPopup();
-                }
-              })
-            } else {
-              errorPopup();
-            }
-          }
-        }
-        if (barcode != '' & user != '' && user != undefined ) {
-          console.log("barcode and user set...");
-          consumeDrink(user, barcode);
-          user = '';
-          barcode = '';
-        }
-      }
-      */
-
       function findAlias(input, callback) {
         console.log("findAlias");
         //if its an already known value, dont do a call to the service
@@ -598,10 +535,19 @@
           callback(input);
         }
         //TODO: this will later be a call to a webservice
-        if(input == '040FA7E2704D81') {
-            callback('tvluke');
-        }
-        callback(input);
+        $.ajax({
+          url: "http://" + iceBoxIp + ":8085/alias/"+input,
+          type: 'GET',
+          crossDomain: true,
+          dataType: 'json',
+          success: function (returnValue) {
+            console.log(returnValue.alias);
+            callback(returnValue.alias);
+          },
+          error: function () {
+            callback(input);
+          }
+        });
       }
 
       function errorPopup() {
@@ -785,6 +731,7 @@
       function undofadeOut() {
         $('#undo').fadeOut("fast");
         clearTimeout(undotimeout);
+        resetProgress();
       }
 
       function undofadeIn() {
@@ -797,7 +744,7 @@
         $('#progfunds').removeClass('btn-success');
 
         $('#progfunds').addClass('btn-default');
-        
+
         if(user != '') {
           $('#proguser').removeClass('btn-info');
           $('#proguser').removeClass('btn-default');
