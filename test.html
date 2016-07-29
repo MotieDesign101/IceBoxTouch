@@ -35,26 +35,151 @@
           overflow:  hidden;
       }
 
-      .btn-default {
-        background-color: #c6c6c6;
-      }
-
       .undo {
         background-color: #FF0000;
-      }
-
-      .btn-flat {
-        filter:progid:DXImageTransform.Microsoft.Gradient(enabled='false');
-        -webkit-box-shadow: none;
-        -moz-box-shadow: none;
-        box-shadow: none;
-        background-image: none;
-        border: 0;
       }
 
       #progress {
         float: left;
         width: 10%;
+      }
+
+      .centered {
+        margin: auto;
+      }
+
+      .btn-flat {
+         filter:progid:DXImageTransform.Microsoft.Gradient(enabled='false');
+         -webkit-box-shadow: none;
+         -moz-box-shadow: none;
+         box-shadow: none;
+         background-image: none;
+       }
+
+      /** The Magic **/
+      .btn-breadcrumb .btn:not(:last-child):after {
+        content: " ";
+        display: block;
+        width: 0;
+        height: 0;
+        border-top: 17px solid transparent;
+        border-bottom: 17px solid transparent;
+        border-left: 10px solid white;
+        position: absolute;
+        top: 50%;
+        margin-top: -17px;
+        left: 100%;
+        z-index: 3;
+      }
+      .btn-breadcrumb .btn:not(:last-child):before {
+        content: " ";
+        display: block;
+        width: 0;
+        height: 0;
+        border-top: 17px solid transparent;
+        border-bottom: 17px solid transparent;
+        border-left: 10px solid rgb(173, 173, 173);
+        position: absolute;
+        top: 50%;
+        margin-top: -17px;
+        margin-left: 1px;
+        left: 100%;
+        z-index: 3;
+      }
+
+      /** The Spacing **/
+      .btn-breadcrumb .btn {
+        padding:6px 12px 6px 24px;
+      }
+      .btn-breadcrumb .btn:first-child {
+        padding:6px 6px 6px 10px;
+      }
+      .btn-breadcrumb .btn:last-child {
+        padding:6px 18px 6px 24px;
+      }
+
+      /** Default button **/
+      .btn-breadcrumb .btn.btn-default:not(:last-child):after {
+        border-left: 10px solid #fff;
+      }
+      .btn-breadcrumb .btn.btn-default:not(:last-child):before {
+        border-left: 10px solid #ccc;
+      }
+      .btn-breadcrumb .btn.btn-default:hover:not(:last-child):after {
+        border-left: 10px solid #ebebeb;
+      }
+      .btn-breadcrumb .btn.btn-default:hover:not(:last-child):before {
+        border-left: 10px solid #adadad;
+      }
+
+      /** Primary button **/
+      .btn-breadcrumb .btn.btn-primary:not(:last-child):after {
+        border-left: 10px solid #428bca;
+      }
+      .btn-breadcrumb .btn.btn-primary:not(:last-child):before {
+        border-left: 10px solid #357ebd;
+      }
+      .btn-breadcrumb .btn.btn-primary:hover:not(:last-child):after {
+        border-left: 10px solid #3276b1;
+      }
+      .btn-breadcrumb .btn.btn-primary:hover:not(:last-child):before {
+        border-left: 10px solid #285e8e;
+      }
+
+      /** Success button **/
+      .btn-breadcrumb .btn.btn-success:not(:last-child):after {
+        border-left: 10px solid #5cb85c;
+      }
+      .btn-breadcrumb .btn.btn-success:not(:last-child):before {
+        border-left: 10px solid #4cae4c;
+      }
+      .btn-breadcrumb .btn.btn-success:hover:not(:last-child):after {
+        border-left: 10px solid #47a447;
+      }
+      .btn-breadcrumb .btn.btn-success:hover:not(:last-child):before {
+        border-left: 10px solid #398439;
+      }
+
+      /** Danger button **/
+      .btn-breadcrumb .btn.btn-danger:not(:last-child):after {
+        border-left: 10px solid #d9534f;
+      }
+      .btn-breadcrumb .btn.btn-danger:not(:last-child):before {
+        border-left: 10px solid #d43f3a;
+      }
+      .btn-breadcrumb .btn.btn-danger:hover:not(:last-child):after {
+        border-left: 10px solid #d2322d;
+      }
+      .btn-breadcrumb .btn.btn-danger:hover:not(:last-child):before {
+        border-left: 10px solid #ac2925;
+      }
+
+      /** Warning button **/
+      .btn-breadcrumb .btn.btn-warning:not(:last-child):after {
+        border-left: 10px solid #f0ad4e;
+      }
+      .btn-breadcrumb .btn.btn-warning:not(:last-child):before {
+        border-left: 10px solid #eea236;
+      }
+      .btn-breadcrumb .btn.btn-warning:hover:not(:last-child):after {
+        border-left: 10px solid #ed9c28;
+      }
+      .btn-breadcrumb .btn.btn-warning:hover:not(:last-child):before {
+        border-left: 10px solid #d58512;
+      }
+
+      /** Info button **/
+      .btn-breadcrumb .btn.btn-info:not(:last-child):after {
+        border-left: 10px solid #5bc0de;
+      }
+      .btn-breadcrumb .btn.btn-info:not(:last-child):before {
+        border-left: 10px solid #46b8da;
+      }
+      .btn-breadcrumb .btn.btn-info:hover:not(:last-child):after {
+        border-left: 10px solid #39b3d7;
+      }
+      .btn-breadcrumb .btn.btn-info:hover:not(:last-child):before {
+        border-left: 10px solid #269abc;
       }
 
     </style>
@@ -68,6 +193,7 @@
       var barcode = '';
 
       var undodata={};
+      var drinksbybarcode={};
       var undotimeout;
 
       var barcodes = [];
@@ -111,7 +237,7 @@
         if (event.keyCode == 13) {
           var newcode = code;
           console.log("LOG: " + newcode);
-          choice(newcode);
+          choice(newcode, false);
           code = '';
         } else if (event.keyCode > 32) {
           code = code + String.fromCharCode(event.keyCode);
@@ -207,19 +333,21 @@
         console.log("show drinks");
         checkIfUndoIsVisible();
         $('#drinks').empty();
+        drinksbybarcode = {};
         var row = $('<div class="row" style="height: 33%">');
         for (var i = 0; i < drinks.length; i++) {
           if (drinks[i].quantity > 0) {
             barcodes.push(drinks[i].barcode);
+            drinksbybarcode[drinks[i].barcode]=drinks[i].name;
             console.log("add drink: " + drinks[i].barcode);
-            var drink1 = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + drinks[i].barcode + '" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' +  $('<div/>').text(drinks[i].name).html() + '</button></div>')
+            var drink1 = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + drinks[i].barcode + '" class="btn btn-primary btn-lg choice" data-loading-text="Processing..." style="width:100%; height: 100%;">' +  $('<div/>').text(drinks[i].name).html() + '</button></div>')
             drink1.appendTo(row);
           }
         }
         $(row).appendTo('#drinks');
 
         var refreshthing = $('<div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">');
-        $('<button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
+        $('<button type="button" class="btn btn-default btn-lg neindake" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
         $(refreshthing).appendTo('#drinks');
 
         spinnerFadeOut();
@@ -275,7 +403,7 @@
       function showConsumers(consumers) {
         $('#users').empty();
         var row = $('<div class="row" style="height: 33%">');
-        var anon = $('<div class="col-md-12" style="height: 100%"><button type="button" data-code="Anon" class="btn btn-primary btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">ANONYM</button></div>');
+        var anon = $('<div class="col-md-12" style="height: 100%"><button type="button" data-code="Anon" class="btn btn-primary btn-lg choice" data-loading-text="Processing..." style="width:100%; height: 100%;">ANONYM</button></div>');
         anon.appendTo(row);
         $(row).appendTo('#users');
         var row2 = $('<div class="row" style="height: 33%">');
@@ -284,7 +412,7 @@
             usernames.push(consumers[i].username);
             console.log("add username: " + consumers[i].username);
             var money = (consumers[i].ledger / 100).toFixed(2);
-            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary usernamediv btn-lg choice btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + ' (' + money + ' €)</button></div>');
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-primary usernamediv btn-lg choice" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + ' (' + money + ' €)</button></div>');
             userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
@@ -295,14 +423,14 @@
             usernames.push(consumers[i].username);
             nofunds.push(consumers[i].username);
             console.log("add username: " + consumers[i].username);
-            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload btn-flat" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + '</button></div>');
+            var userd = $('<div class="col-md-4 col-sm-4 col-xs-4" style="height: 100%; margin-top: 10px;"><button type="button" data-code="' + consumers[i].username + '" class="btn btn-default btn-lg reload" data-loading-text="Processing..." style="width:100%; height: 100%;">' + $('<div/>').text(consumers[i].username).html() + '</button></div>');
             userd.appendTo(row2);
           }
           $(row2).appendTo('#users');
         }
 
         var refreshthing = $('<div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">');
-        $('<button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
+        $('<button type="button" class="btn btn-default btn-lg neindake" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>').appendTo(refreshthing);
         $(refreshthing).appendTo('#users');
 
         spinnerFadeOut();
@@ -347,10 +475,63 @@
 
       function buttonpressed(e) {
         console.log(e.target.dataset.code)
-        choice(e.target.dataset.code);
+        choice(e.target.dataset.code, false);
       }
 
+      function choice(e, isAlternative) {
+        console.log("choice called")
+        findAlias(e, function(input) {
+          console.log("input="+input);
+          //check if its a drink, if so, set the drink
+          if ($.inArrayIn(input, barcodes) >= 0) {
+            console.log("ok, barcode set.");
+            barcode = input;
+          }
+
+          //check if its a username, if so, set username
+          if(input == 'Anon') {
+            user = 'Anon';
+          }
+          if ($.inArrayIn(input, usernames) >= 0) {
+            user = usernames[$.inArrayIn(input, usernames)];
+            if ($.inArrayIn(input, nofunds) < 0) {
+              console.log("is a user, has funds");
+              usersFadeOut();
+            } else {
+              console.log("is a user, has no funds");
+              reloadUser(user);
+            }
+          }
+
+          //if username and barcode are set, buy
+          if (barcode != '' && user != '' && user != undefined) {
+            console.log("barcode and user set...");
+            consumeDrink(user, barcode);
+            user = '';
+            barcode = '';
+          }
+
+          //else if, only drink is set, hide drinks, show user
+          if (barcode != '' && (user == '' || user == undefined)) {
+            console.log('barcode set, uSer not set')
+            drinksFadeOut();
+            reloadFadeOut();
+            usersFadeIn();
+          }
+
+          if((barcode == '' || barcode == undefined) && user != '') {
+            console.log("user set, barcode not set");
+            $('#back').fadeIn("fast");
+            //undofadeIn();
+          }
+        });
+      }
+
+      /*
       function choice(e) {
+        if(user && barcode) {
+          return;
+        }
         code = '';
         console.log("submitted value "+e);
         console.log(barcodes.length);
@@ -358,7 +539,9 @@
         if (e == "Anon" && barcode != '') {
           console.log("OK, you went for anon...")
           user = "Anon";
-          consumeDrink();
+          consumeDrink(user, barcode);
+          user = '';
+          barcode = '';
           return;
         }
         if ($.inArrayIn(e, barcodes) >= 0) {
@@ -366,42 +549,76 @@
           barcode = e;
           drinksFadeOut();
           reloadFadeOut();
-          usersFadeIn();
+          if(!user) {
+            usersFadeIn();
+          }
         } else {
           console.log("not a drink!")
           if ($.inArrayIn(e, usernames) >= 0) {
-            console.log("is a user");
-            user = usernames[$.inArrayIn(e, usernames)];
-            if ($.inArrayIn(e, nofunds) < 0) {
-              //TODO how do we know he has funds?
-              console.log("is a user, has funds");
-              usersFadeOut();
-            } else {
-              console.log("is a user, has no funds");
-              reloadUser(user);
+            if(!user) {
+              console.log("is a user");
+
+              if ($.inArrayIn(e, nofunds) < 0) {
+                //TODO how do we know he has funds?
+                console.log("is a user, has funds");
+                usersFadeOut();
+              } else {
+                console.log("is a user, has no funds");
+                reloadUser(user);
+              }
             }
           } else {
-            popupFadeIn('ERROR', 'Sorry. Something went wrong. Try again', true)
-            setTimeout(function () {
-              resetAll();
-              popupFadeOut();
-              usersFadeOut();
-              drinksFadeIn();
-            }, 5000);
+            if(!isAlternative) {
+              findAlias(e, function(alias) {
+                if(alias) {
+                  choice(alias, true);
+                } else {
+                  errorPopup();
+                }
+              })
+            } else {
+              errorPopup();
+            }
           }
         }
         if (barcode != '' & user != '' && user != undefined ) {
           console.log("barcode and user set...");
-          consumeDrink();
+          consumeDrink(user, barcode);
+          user = '';
+          barcode = '';
         }
       }
+      */
 
-      function consumeDrink() {
+      function findAlias(input, callback) {
+        console.log("findAlias");
+        //if its an already known value, dont do a call to the service
+        if (($.inArrayIn(input, usernames) >= 0) || ($.inArrayIn(input, barcodes) >= 0)) {
+          console.log("already known value")
+          callback(input);
+        }
+        //TODO: this will later be a call to a webservice
+        if(input == '040FA7E2704D81') {
+            callback('tvluke');
+        }
+        callback(input);
+      }
+
+      function errorPopup() {
+        popupFadeIn('ERROR', 'Sorry. Something went wrong. Try again', true);
+        setTimeout(function () {
+          popupFadeOut();
+        }, 5000);
+      }
+
+      function consumeDrink(theUser, theBarcode) {
+        drinksFadeOut();
+        console.log("consume drink was called: "+theUser+" "+theBarcode);
         $.ajax({
-          url: "http://" + iceBoxIp + ":8081/consumptions/" + encodeURIComponent(user),
+          url: "http://" + iceBoxIp + ":8081/consumptions/" + encodeURIComponent(theUser),
           type: 'POST',
           data: {
-            barcode: barcode
+            barcode: theBarcode
           },
           crossDomain: true,
           dataType: 'json',
@@ -409,7 +626,7 @@
             //TODO: show sucess and new amount on ledger
             usersFadeOut();
             reloadFadeOut();
-            if (user == 'Anon') {
+            if (theUser == 'Anon') {
               popupFadeIn('YAY', 'Drink succesfully purchased', false)
               setTimeout(function () {
                 popupFadeOut();
@@ -427,7 +644,7 @@
                 if (consumer.ledger >= 125) {
                   resetAll();
                 } else {
-                  barcode = '';
+                  theBarcode = '';
                   reloadUser(consumer.username);
                 }
               }, 3000);
@@ -451,6 +668,7 @@
         usersFadeOut();
         drinksFadeIn();
         getIceBoxIp();
+        resetProgress();
       }
 
       function submitreload(e) {
@@ -464,7 +682,7 @@
           crossDomain: true,
           dataType: 'json',
           success: function (consumers) {
-            choice(user);
+            choice(user, false);
             resetAll();
           },
           error: function (jqXHR, textStatus, error) {
@@ -484,38 +702,78 @@
 
       function spinnerFadeOut() {
         $('#spinner').fadeOut("fast");
+        resetProgress();
       }
 
       function usersFadeOut() {
         console.log("usersFadeOut");
         $('#users').fadeOut("fast");
         $('#back').fadeOut("fast");
+
+        $('#proguser').removeClass('btn-info');
+        $('#proguser').removeClass('btn-default');
+        $('#proguser').removeClass('btn-success');
+        if(user == '' || user == undefined) {
+          $('#proguser').removeClass('btn-default');
+          $('#proguser').text('User Selection');
+        } else {
+          $('#proguser').addClass('btn-success');
+          $('#proguser').text(user);
+        }
       }
 
       function usersFadeIn() {
         $('#users').fadeIn("fast");
         $('#back').fadeIn("fast");
+
+        $('#proguser').removeClass('btn-info');
+        $('#proguser').removeClass('btn-default');
+        $('#proguser').removeClass('btn-success');
+
+        $('#proguser').addClass('btn-info');
+        if(user == '' || user == undefined) {
+          $('#proguser').removeClass('btn-default');
+          $('#proguser').text('User Selection');
+        } else {
+          $('#proguser').addClass('btn-success');
+          $('#proguser').text(user);
+        }
         undofadeOut();
       }
 
       function drinksFadeIn() {
         console.log("drinksFadeIn");
         $('#drinks').fadeIn("fast");
+        resetProgress();
       }
 
       function drinksFadeOut() {
         $('#drinks').fadeOut("fast");
+        resetProgress();
       }
 
       function reloadFadeIn() {
         $('#reload').fadeIn("fast");
         $('#back').fadeIn("fast");
+
+        $('#progfunds').removeClass('btn-info');
+        $('#progfunds').removeClass('btn-default');
+        $('#progfunds').removeClass('btn-success');
+
+        $('#progfunds').addClass('btn-info');
+
         undofadeOut();
       }
 
       function reloadFadeOut() {
         $('#reload').fadeOut("fast");
         $('#back').fadeOut("fast");
+
+        $('#progfunds').removeClass('btn-info');
+        $('#progfunds').removeClass('btn-default');
+        $('#progfunds').removeClass('btn-success');
+
+        $('#progfunds').addClass('btn-default');
       }
 
       function popupFadeOut() {
@@ -531,6 +789,49 @@
 
       function undofadeIn() {
         $('#undo').fadeIn("fast");
+      }
+
+      function resetProgress() {
+        $('#progfunds').removeClass('btn-info');
+        $('#progfunds').removeClass('btn-default');
+        $('#progfunds').removeClass('btn-success');
+
+        $('#progfunds').addClass('btn-default');
+        
+        if(user != '') {
+          $('#proguser').removeClass('btn-info');
+          $('#proguser').removeClass('btn-default');
+          $('#proguser').removeClass('btn-success');
+
+          $('#proguser').addClass('btn-success');
+          $('#proguser').text(user);
+        }
+        if(user == '' || user == undefined) {
+          $('#proguser').removeClass('btn-info');
+          $('#proguser').removeClass('btn-default');
+          $('#proguser').removeClass('btn-success');
+
+          $('#proguser').addClass('btn-default');
+          $('#proguser').text('User Selection');
+        }
+        if(barcode != '') {
+          $('#progdrink').removeClass('btn-info');
+          $('#progdrink').removeClass('btn-default');
+          $('#progdrink').removeClass('btn-success');
+
+          $('#progdrink').addClass('btn-success');
+
+          $('#progdrink').text(drinksbybarcode[barcode]);
+        }
+        if(barcode == '' || barcode == undefined) {
+          $('#progdrink').removeClass('btn-info');
+          $('#progdrink').removeClass('btn-default');
+          $('#progdrink').removeClass('btn-success');
+
+          $('#progdrink').addClass('btn-info');
+
+          $('#progdrink').text('Drink Selection');
+        }
       }
 
       function popupFadeIn(title, content, error) {
@@ -552,23 +853,30 @@
     </script>
   </head>
   <body>
-    <div id='main' style="height: 100%;  width:90%">
+    <div class="row centered" style="width:100%; padding-left: 17px">
+        <div class="btn-group btn-breadcrumb" style="width:100%;">
+            <button id="progdrink" class="btn btn-flat btn-info" style="width:33%;">Drink Selection</button>
+            <button id="proguser" class="btn btn-flat btn-default" style="width:33%;">User Selection</button>
+            <button id="progfunds" class="btn btn-flat btn-default" style="width:33%;">Add Funds</button>
+        </div>
+	</div>
+    <div id='main' style="height: 100%; width:90%; float:left;">
       <div class="container-fluid" onclick="undo()" id="undo">
         <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-          <button type="button" class="btn btn-default btn-lg undo btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">UNDO</button>
+          <button type="button" class="btn btn-default btn-lg undo" data-loading-text="Processing..." style="width:100%; height: 90%;">UNDO</button>
+        </div>
+      </div>
+      <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
+        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
+          <button type="button" class="btn btn-default btn-lg neindake" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button>
         </div>
       </div>
       <div class="container-fluid" id="drinks" style="height: 100%"></div>
-      <div class="container-fluid neindanke" onclick="resetAll()" id="back" style="height: 14%;">
-        <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-          <button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">NO THANKS</button>
-        </div>
-      </div>
       <div class="container-fluid" id="users" style="height: 85%"></div>
       <div class="container-fluid" id="reload" style="height: 85%"></div>
       <div id="spinner" onclick="resetAll()" style="position: fixed; top: 50%; left: 50%; margin-left: -50px; margin-top: -50px;">
         <div class="col-md-12 col-sm-12 col-xs-12" style="height: 100%; margin-top: 10px;">
-          <button type="button" class="btn btn-default btn-lg neindake btn-flat" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
+          <button type="button" class="btn btn-default btn-lg neindake" data-loading-text="Processing..." style="width:100%; height: 90%;">REFRESH</button>
         </div>
       </div>
       <div id="popup" style="width: 50%; position: fixed; top: 50%; left: 50%; margin-left: -25%;">
