@@ -200,39 +200,6 @@
       var usernames = [];
       var nofunds = [];
 
-      (function($){
-        $.extend({
-          // Case insensative $.inArray (http://api.jquery.com/jquery.inarray/)
-          // $.inArrayIn(value, array [, fromIndex])
-          //  value (type: String)
-          //    The value to search for
-          //  array (type: Array)
-          //    An array through which to search.
-          //  fromIndex (type: Number)
-          //    The index of the array at which to begin the search.
-          //    The default is 0, which will search the whole array.
-          inArrayIn: function(elem, arr, i){
-            // not looking for a string anyways, use default method
-            if (typeof elem !== 'string'){
-             return $.inArray.apply(this, arguments);
-            }
-            // confirm array is populated
-            if (arr){
-              var len = arr.length;
-                i = i ? (i < 0 ? Math.max(0, len + i) : i) : 0;
-              elem = elem.toLowerCase();
-              for (; i < len; i++){
-                if (i in arr && arr[i].toLowerCase() == elem){
-                  return i;
-                }
-              }
-            }
-            // stick with inArray/indexOf and return -1 on no match
-            return -1;
-          }
-        });
-      })(jQuery);
-
       document.addEventListener('keydown', function (event) {
         if (event.keyCode == 13) {
           var newcode = code;
@@ -445,7 +412,7 @@
       function reloadUser(userToReload) {
         user = userToReload;
         console.log("reloadUser "+userToReload)
-        if ($.inArrayIn(userToReload, usernames) >= 0) {
+        if ($.inArray(userToReload, usernames) >= 0) {
           console.log("ok, lets go...");
           usersFadeOut();
           drinksFadeOut();
@@ -483,7 +450,7 @@
         findAlias(e, function(input) {
           console.log("input="+input);
           //check if its a drink, if so, set the drink
-          if ($.inArrayIn(input, barcodes) >= 0) {
+          if ($.inArray(input, barcodes) >= 0) {
             console.log("ok, barcode set.");
             barcode = input;
           }
@@ -492,9 +459,9 @@
           if(input == 'Anon') {
             user = 'Anon';
           }
-          if ($.inArrayIn(input, usernames) >= 0) {
-            user = usernames[$.inArrayIn(input, usernames)];
-            if ($.inArrayIn(input, nofunds) < 0) {
+          if ($.inArray(input, usernames) >= 0) {
+            user = usernames[$.inArray(input, usernames)];
+            if ($.inArray(input, nofunds) < 0) {
               console.log("is a user, has funds");
               usersFadeOut();
             } else {
@@ -530,7 +497,7 @@
       function findAlias(input, callback) {
         console.log("findAlias");
         //if its an already known value, dont do a call to the service
-        if (($.inArrayIn(input, usernames) >= 0) || ($.inArrayIn(input, barcodes) >= 0)) {
+        if (($.inArray(input, usernames) >= 0) || ($.inArray(input, barcodes) >= 0)) {
           console.log("already known value")
           callback(input);
         }
@@ -591,6 +558,8 @@
                   resetAll();
                 } else {
                   theBarcode = '';
+                  user = '';
+                  barcode = '';
                   reloadUser(consumer.username);
                 }
               }, 3000);
