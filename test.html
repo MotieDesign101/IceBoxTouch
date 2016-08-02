@@ -200,7 +200,7 @@
       var usernames = [];
       var nofunds = [];
 
-      document.addEventListener('keydown', function (event) {
+      document.addEventListener('keypress', function (event) {
         if (event.keyCode == 13) {
           var newcode = code;
           console.log("LOG: " + newcode);
@@ -597,8 +597,14 @@
           crossDomain: true,
           dataType: 'json',
           success: function (consumers) {
-            choice(user, false);
-            resetAll();
+            if (barcode != '' && user != '' && user != undefined) {
+              choice(user, false);
+            }
+            if (barcode == '' && user != '' && user != undefined) {
+              reloadFadeOut();
+              drinksFadeIn();
+              resetProgress();
+            }
           },
           error: function (jqXHR, textStatus, error) {
             popupFadeIn('ERROR', 'Sorry. Something went wrong. You did not recharge your account. \n ' + textStatus + "\n " + error + ' \n' + jqXHR, true)
@@ -705,6 +711,7 @@
 
       function undofadeIn() {
         $('#undo').fadeIn("fast");
+        resetProgress();
       }
 
       function resetProgress() {
